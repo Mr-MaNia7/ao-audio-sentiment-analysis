@@ -29,9 +29,6 @@ wheels/
 *.devenv
 *.db
 
-# Django migrations
-**/migrations/
-
 # If you use Docker
 *.dockerignore
 Dockerfile
