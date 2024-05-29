@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'rest_framework',
-    'accounts', 
+    'accounts',
+    'audio_analysis',
 ]
 
 AUTHENTICATION_BACKENDS = (
