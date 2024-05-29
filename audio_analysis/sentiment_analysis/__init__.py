@@ -1,0 +1,1 @@
+from audio_analysis.sentiment_analysis.predict import predict_sentiment
