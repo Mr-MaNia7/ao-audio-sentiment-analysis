@@ -3,3 +3,5 @@ djangorestframework
 django-allauth
 python-dotenv
 python-magic
+django-storages
+boto3

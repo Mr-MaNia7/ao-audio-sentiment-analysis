@@ -17,6 +17,11 @@ class AudioFileSerializer(serializers.ModelSerializer):
     
     file = serializers.FileField(validators=[validate_audio_file])
 
+    file_url = serializers.SerializerMethodField()
+
+    def get_file_url(self, obj):
+        return obj.get_file_url()
+
 
 class SentimentAnalysisSerializer(serializers.ModelSerializer):
     class Meta:

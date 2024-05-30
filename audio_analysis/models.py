@@ -3,9 +3,11 @@ from accounts.models import CustomUser as User
 
 class AudioFile(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    file_url = models.URLField()
-    file = models.FileField(upload_to='audio_files/', default='audio_files/default.mp3')
+    file = models.FileField(upload_to='audio_files/')
     upload_time = models.DateTimeField(auto_now_add=True)
+    
+    def get_file_url(self):
+        return self.file.url
 
 class SentimentAnalysis(models.Model):
     audio_file = models.ForeignKey(AudioFile, on_delete=models.CASCADE)
