@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'accounts',
     'audio_analysis',
     'storages',
+    'corsheaders',
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -75,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'audiosentimentanalysis.urls'
@@ -186,3 +188,4 @@ if DEBUG:
 else:
     MEDIA_URL = f'https://{AWS_S3_CUSTOM_DOMAIN}/{AWS_LOCATION}/'
 
+CORS_ALLOW_ALL_ORIGINS = True

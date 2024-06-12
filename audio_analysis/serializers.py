@@ -6,15 +6,16 @@ def validate_audio_file(file):
     mime = magic.Magic(mime=True)
     file_mime_type = mime.from_buffer(file.read(2048))  # Read the first few bytes of the file
     file.seek(0)  # Reset file pointer after reading
+    print("file_mime_type", file_mime_type)
 
-    if not file_mime_type.startswith('audio/'):
+    if not (file_mime_type.startswith('audio/') or file_mime_type.startswith('video/webm')):
         raise serializers.ValidationError("Invalid file type. Only audio files are allowed.")
 
 class AudioFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = AudioFile
         fields = '__all__'
-    
+
     file = serializers.FileField(validators=[validate_audio_file])
 
     file_url = serializers.SerializerMethodField()
