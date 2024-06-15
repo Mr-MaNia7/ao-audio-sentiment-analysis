@@ -68,5 +68,3 @@ class AudioFileViewSet(viewsets.ModelViewSet):
             'sentiment': SentimentAnalysisSerializer(sentiment_analysis).data
         }
         return Response(response, status=status.HTTP_201_CREATED)
-
-   

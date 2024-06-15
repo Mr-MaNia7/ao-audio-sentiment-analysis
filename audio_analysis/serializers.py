@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import AudioFile, SentimentAnalysis
+from .models import AudioAnalysis
 import magic
 
 def validate_audio_file(file):
@@ -11,9 +11,9 @@ def validate_audio_file(file):
     if not (file_mime_type.startswith('audio/') or file_mime_type.startswith('video/webm')):
         raise serializers.ValidationError("Invalid file type. Only audio files are allowed.")
 
-class AudioFileSerializer(serializers.ModelSerializer):
+class AudioAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
-        model = AudioFile
+        model = AudioAnalysis
         fields = '__all__'
 
     file = serializers.FileField(validators=[validate_audio_file])
@@ -22,9 +22,3 @@ class AudioFileSerializer(serializers.ModelSerializer):
 
     def get_file_url(self, obj):
         return obj.get_file_url()
-
-
-class SentimentAnalysisSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = SentimentAnalysis
-        fields = '__all__'

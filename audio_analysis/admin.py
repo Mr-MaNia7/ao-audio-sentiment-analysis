@@ -1,5 +1,4 @@
 from django.contrib import admin
-from .models import AudioFile, SentimentAnalysis
+from .models import AudioAnalysis
 
-admin.site.register(AudioFile)
-admin.site.register(SentimentAnalysis)
+admin.site.register(AudioAnalysis)
