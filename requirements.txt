@@ -6,3 +6,6 @@ python-magic
 django-storages
 boto3
 django-cors-headers
+librosa
+tensorflow
+numpy
