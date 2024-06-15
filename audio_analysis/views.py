@@ -1,12 +1,11 @@
+from django.forms import ValidationError
 import tensorflow as tf
 import numpy as np
-from audio_analysis.models import AudioAnalysis
+from audio_analysis.models import AudioAnalysis, Sentiment
 from audio_analysis.utils.preprocessing import extract_features
 from .serializers import AudioAnalysisSerializer
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
-from rest_framework.response import Response
-from rest_framework import status
 import os
 from django.conf import settings
 from tensorflow.keras.initializers import Orthogonal 
@@ -37,32 +36,41 @@ class AudioAnalysisViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         file = self.request.data.get('file')
         
+        if not file:
+            raise ValidationError("No file provided")
+        
         # Save the file temporarily
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(file.read())
             temp_file_path = temp_file.name
             
-        original_features = extract_features(temp_file_path)     
-        all_features = np.array(original_features)
-        input_data = np.expand_dims(all_features, axis=0)
+        try:
+            original_features = extract_features(temp_file_path)     
+            all_features = np.array(original_features)
+            input_data = np.expand_dims(all_features, axis=0)
+            
+            # Make a prediction
+            prediction = model.predict(input_data)
+            sentiment = np.argmax(prediction, axis=1)[0]
+            
+            # Map the sentiment to a label
+            sentiment_label = self.map_sentiment_to_label(sentiment)
+            confidence_score = prediction[0][sentiment] * 100
+            
+            audio_file = serializer.save(
+                sentiment=sentiment_label,
+                confidence_score=confidence_score      
+            )
+        except Exception as e:
+            print(e)
         
-        # Make a prediction
-        prediction = model.predict(input_data)
-        sentiment = np.argmax(prediction, axis=1)[0]
-        
-        # Map the sentiment to a label
-        sentiment_label = self.map_sentiment_to_label(sentiment)
-        audio_file.sentiment = sentiment_label
-        audio_file.confidence_score = 90.0  # Placeholder value
-        
-        audio_file = serializer.save()
-
-        return Response({'audio_file': serializer.data}, status=status.HTTP_201_CREATED)
+        finally:
+            os.remove(temp_file_path)
 
     def map_sentiment_to_label(self, sentiment):
-            sentiment_mapping = {
-                0: 'negative',
-                1: 'neutral',
-                2: 'positive'
-            }
-            return sentiment_mapping.get(sentiment, 'unknown')
+        sentiment_map = {
+            0: Sentiment.NEGATIVE,
+            1: Sentiment.NEUTRAL,
+            2: Sentiment.POSITIVE
+        }
+        return sentiment_map.get(sentiment, Sentiment.NEUTRAL).value

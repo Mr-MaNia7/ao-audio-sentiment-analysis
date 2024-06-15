@@ -1,18 +1,17 @@
 from django.db import models
-from enum import Enum
+from django.utils.translation import gettext_lazy as _
 
-class Sentiment(Enum):
-    POSITIVE = 'positive'
-    NEGATIVE = 'negative'
-    NEUTRAL = 'neutral'
+class Sentiment(models.TextChoices):
+    POSITIVE = 'positive', _('Positive')
+    NEGATIVE = 'negative', _('Negative')
+    NEUTRAL = 'neutral', _('Neutral')
 
 class AudioAnalysis(models.Model):
     user_id = models.CharField(max_length=255)  # Storing only user identifier from Next.js
     file = models.FileField(upload_to='audio_files/')
-    upload_time = models.DateTimeField(auto_now_add=True)
-    sentiment = models.CharField(max_length=255, choices=[(tag, tag.value) for tag in Sentiment])
+    sentiment = models.CharField(max_length=10, choices=Sentiment.choices, default=Sentiment.NEUTRAL)
     confidence_score = models.FloatField()
-    analysis_time = models.DateTimeField(auto_now_add=True)
+    upload_time = models.DateTimeField(auto_now_add=True)
 
     def get_file_url(self):
         return self.file.url
