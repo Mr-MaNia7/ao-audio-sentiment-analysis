@@ -1,10 +1,8 @@
-import keras
 import tensorflow as tf
-import librosa
 import numpy as np
-from audio_analysis.models import AudioFile, SentimentAnalysis
-from audio_analysis.utils.preprocessing import dyn_change, extract_features, extract_features_helper, noise, pitch, shift, speedNpitch, stretch
-from .serializers import AudioFileSerializer, SentimentAnalysisSerializer
+from audio_analysis.models import AudioAnalysis
+from audio_analysis.utils.preprocessing import extract_features
+from .serializers import AudioAnalysisSerializer
 from rest_framework import viewsets
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
@@ -30,19 +28,15 @@ custom_objects = {
 
 model_path = os.path.join(settings.BASE_DIR, 'audio_analysis/models', 'aug_noiseNshift_model.h5')
 model = tf.keras.models.load_model(model_path, custom_objects=custom_objects)
-class AudioFileViewSet(viewsets.ModelViewSet):
-    queryset = AudioFile.objects.all()
-    serializer_class = AudioFileSerializer
+
+class AudioAnalysisViewSet(viewsets.ModelViewSet):
+    queryset = AudioAnalysis.objects.all()
+    serializer_class = AudioAnalysisSerializer
     parser_classes = (MultiPartParser, FormParser)
-    def map_sentiment_to_label(self, sentiment):
-            sentiment_mapping = {
-                0: 'negative',
-                1: 'neutral',
-                2: 'positive'
-            }
-            return sentiment_mapping.get(sentiment, 'unknown')
+    
     def perform_create(self, serializer):
         file = self.request.data.get('file')
+        
         # Save the file temporarily
         with tempfile.NamedTemporaryFile(delete=False) as temp_file:
             temp_file.write(file.read())
@@ -51,20 +45,24 @@ class AudioFileViewSet(viewsets.ModelViewSet):
         original_features = extract_features(temp_file_path)     
         all_features = np.array(original_features)
         input_data = np.expand_dims(all_features, axis=0)
+        
         # Make a prediction
         prediction = model.predict(input_data)
         sentiment = np.argmax(prediction, axis=1)[0]
-        # Optionally, you can map the sentiment to a label
+        
+        # Map the sentiment to a label
         sentiment_label = self.map_sentiment_to_label(sentiment)
-        confidence_score = 90
+        audio_file.sentiment = sentiment_label
+        audio_file.confidence_score = 90.0  # Placeholder value
+        
         audio_file = serializer.save()
-        sentiment_analysis = SentimentAnalysis.objects.create(
-            audio_file = audio_file,
-            sentiment=sentiment_label,
-            confidence_score=confidence_score
-        )
-        response = {
-            'audio_file': AudioFileSerializer(audio_file).data,
-            'sentiment': SentimentAnalysisSerializer(sentiment_analysis).data
-        }
-        return Response(response, status=status.HTTP_201_CREATED)
+
+        return Response({'audio_file': serializer.data}, status=status.HTTP_201_CREATED)
+
+    def map_sentiment_to_label(self, sentiment):
+            sentiment_mapping = {
+                0: 'negative',
+                1: 'neutral',
+                2: 'positive'
+            }
+            return sentiment_mapping.get(sentiment, 'unknown')
