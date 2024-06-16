@@ -18,5 +18,3 @@ class AudioAnalysisSerializer(serializers.ModelSerializer):
 
 
     file = serializers.FileField(validators=[validate_audio_file])
-
-    file_url = serializers.SerializerMethodField()
