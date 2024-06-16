@@ -11,3 +11,4 @@ numpy
 librosa
 keras
 psycopg2
+gunicorn
