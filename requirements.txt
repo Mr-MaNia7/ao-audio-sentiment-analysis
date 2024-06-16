@@ -10,4 +10,4 @@ tensorflow
 numpy
 librosa
 keras
-psycopg-binary
+psycopg2
