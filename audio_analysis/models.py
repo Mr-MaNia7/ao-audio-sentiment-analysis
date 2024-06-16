@@ -12,6 +12,3 @@ class AudioAnalysis(models.Model):
     sentiment = models.CharField(max_length=10, choices=Sentiment.choices, default=Sentiment.NEUTRAL)
     confidence_score = models.FloatField()
     upload_time = models.DateTimeField(auto_now_add=True)
-
-    def get_file_url(self):
-        return self.file.url
